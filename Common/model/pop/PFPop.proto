@@ -1,0 +1,12 @@
+message PFPBPopPoint {
+  required float x = 1;
+  required float y = 2;
+  optional double createTime = 3;
+  optional float pressure = 4;
+}
+
+message PFPBPopStroke {
+    required PFPBPopPoint offset = 1;
+    repeated PFPBPopPoint points = 2;
+    required int32 type = 3;
+}

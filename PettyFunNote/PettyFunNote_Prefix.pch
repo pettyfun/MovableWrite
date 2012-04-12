@@ -1,0 +1,9 @@
+//
+// Prefix header for all source files of the 'PettyFunNote' target in the 'PettyFunNote' project
+//
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+    #import "PFViewController.h"
+#endif

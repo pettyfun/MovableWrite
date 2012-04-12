@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+#encoding: utf-8
+
+import os
+from waflib import Utils, Options
+from waflib.Build import BuildContext
+
+REV = '0.8'
+
+def _run(command, ctx=''):
+    if not command.strip():
+        return
+    if ctx:
+        os.system(Utils.subst_vars(command, ctx.env))
+    else:
+        os.system(command)
+
+def _run_block(block, ctx=''):
+    commands = block.split('\n')
+    for command in commands:
+        _run(command.strip(), ctx)
+
+def configure(ctx):
+    ctx.env.HOME_PATH = '%r' % ctx.path
+    ctx.env.SDK = 'iphoneos4.2'
+
+    ctx.env.TARGET = 'PettyFunNote'
+    ctx.env.PRODUCT_NAME = 'MovableWrite'
+
+    ctx.env.CONFIG = 'Adhoc'
+    ctx.env.REV = REV
+
+    ctx.env.CERTIFICATE = 'iPhone Distribution: PIAO YING JUN'
+    ctx.env.PROVISION_PATH = '../../../../iOS/provisions/PettyFunGenericAdhoc.mobileprovision'
+
+    ctx.env.EXOWATCHER_SCRIPT_PATH = '/Users/yjpark/projects/exoweb-labs/ExoWatcher/trunk/scripts'
+    ctx.env.PRODUCT_ID = 'com.pettyfun.movablewrite'
+    ctx.env.PRODUCT_BASE_URL = 'http://fw.exoweb.net:6789/exowatcher/pettyfun/'
+    ctx.env.PRODUCT_SCP_PATH = 'fw.exoweb.net:/home/yjpark/public_html/exowatcher/pettyfun/'
+
+# If you need to clean a specific target/configuration: ${COMMAND) -target ${TARGET) -configuration DebugOrRelease -sdk ${SDK) clean
+
+def build(ctx):
+    if ctx.cmd == 'clean':
+        _run_block("""
+        rm -rf build/*.build
+        rm -rf build/Adhoc-*
+        """, ctx)
+    elif ctx.cmd == 'build':
+        _run('xcodebuild -target ${TARGET} -configuration ${CONFIG} -sdk ${SDK} build', ctx)
+
+def pack_ipa(ctx):
+    _run_block("""
+	rm -rf build/${CONFIG}-iphoneos/r${REV}
+	mkdir -p build/${CONFIG}-iphoneos/r${REV}
+	zip -qr build/${CONFIG}-iphoneos/r${REV}/${TARGET}.app.dSYM.zip build/${CONFIG}-iphoneos/${TARGET}.app.dSYM
+	/usr/bin/xcrun -sdk iphoneos PackageApplication -v build/${CONFIG}-iphoneos/${TARGET}.app -o ${HOME_PATH}/build/${CONFIG}-iphoneos/r${REV}/${PRODUCT_NAME}.ipa --sign "${CERTIFICATE}" --embed ${PROVISION_PATH}
+    """, ctx)
+
+def publish_dmg(ctx):
+    _run_block("""
+    ${EXOWATCHER_SCRIPT_PATH}/create-exowatcher-ios-application-dmg "${HOME_PATH}/build/${CONFIG}-iphoneos/r${REV}/${PRODUCT_NAME}.ipa" "${HOME_PATH}/build/${CONFIG}-iphoneos/r${REV}/${PRODUCT_NAME}-r${REV}.dmg" "${PRODUCT_NAME}-r${REV}"
+    ${EXOWATCHER_SCRIPT_PATH}/upload-exowatcher-dmg "${HOME_PATH}/build/${CONFIG}-iphoneos/r${REV}/${PRODUCT_NAME}-r${REV}.dmg" "${PRODUCT_NAME}-r${REV}.dmg" "${HOME_PATH}/build/${CONFIG}-iphoneos/r${REV}/${PRODUCT_ID}.plist" "${PRODUCT_BASE_URL}" "${PRODUCT_ID}" "r${REV}" "${PRODUCT_SCP_PATH}"
+    """, ctx)
+
+
+
+def test(ctx):
+    _run('GHUNIT_CLI = 1 xcodebuild -target EzeCastleTests -configuration Debug -sdk iphonesimulator4.0 build', ctx)
+
+def release(ctx):
+    Options.commands = ['clean', 'build', 'pack_ipa', 'publish_dmg'] + Options.commands
+
+class PackContext(BuildContext):
+    cmd = 'pack_ipa'
+    fun = 'pack_ipa'
+
+class PublishContext(BuildContext):
+    cmd = 'publish_dmg'
+    fun = 'publish_dmg'
+
+class ReleaseContext(BuildContext):
+    cmd = 'release'
+    fun = 'release'

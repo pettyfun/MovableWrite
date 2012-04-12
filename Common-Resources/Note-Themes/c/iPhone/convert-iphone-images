@@ -1,0 +1,8 @@
+convert -crop 44x44+8+0 ../hide_input.png hide_input.png
+convert -crop 44x44+8+0 ../setup.png setup.png
+convert -crop 44x44+8+0 ../option.png option.png
+convert -crop 44x44+8+0 ../browse.png browse.png
+convert -crop 44x44+8+0 ../undo.png undo.png
+convert -crop 44x44+8+0 ../redo.png redo.png
+convert -crop 44x44+8+0 ../delete.png delete.png
+convert -crop 44x44+8+0 ../return.png return.png
