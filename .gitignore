@@ -45,4 +45,10 @@ Thumbs.db
 
 # Xcode user settings #
 #######################
-xcuserdata
+PettyFunNote/PettyFunNote.xcodeproj/xcuserdata
+PettyFunNote/PettyFunNote.xcodeproj/project.xcworkspace/
+PettyFunNote/PettyFunNote.xcodeproj/*.mode1v3
+PettyFunNote/PettyFunNote.xcodeproj/*.pbxuser
+
+
+
